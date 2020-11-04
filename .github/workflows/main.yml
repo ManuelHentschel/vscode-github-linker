@@ -1,0 +1,31 @@
+name: main
+
+# builds the .vsix file on each push, PR
+# runs a linter on each push, PR
+
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: npm install
+      - uses: lannonbr/vsce-action@master
+        with:
+          args: "package"
+      - name: Identify output file # can be retrieved as steps.filenames.outputs.file_out
+        id: filenames
+        run: echo "::set-output name=file_out::$(ls | grep "\.vsix$" | head -1)"
+      - uses: actions/upload-artifact@v1
+        with:
+          name: ${{ steps.filenames.outputs.file_out }}
+          path: ${{ steps.filenames.outputs.file_out }}
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "13.x"
+      - run: npm install
+      - run: npm run lint
