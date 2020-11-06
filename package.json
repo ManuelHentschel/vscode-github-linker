@@ -1,0 +1,192 @@
+{
+  "name": "github-linker",
+  "displayName": "GitHub Linker",
+  "description": "Make and open Links to GitHub repositories",
+  "version": "0.0.1",
+  "publisher": "manhen",
+  "license": "MIT",
+  "icon": "img/icon.png",
+  "author": {
+    "name": "Manuel Hentschel"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ManuelHentschel/vscode-github-linker-2"
+  },
+  "preview": true,
+  "engines": {
+    "vscode": "^1.50.0"
+  },
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:githubLinker.copyUrl",
+    "onCommand:githubLinker.openUrlInBrowser",
+    "onCommand:githubLinker.openFileFromUrl"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "githubLinker.copyUrl",
+        "title": "GitHub Linker: Copy GitHub link"
+      },
+      {
+        "command": "githubLinker.openUrlInBrowser",
+        "title": "GitHub Linker: Open GitHub link in browser"
+      },
+      {
+        "command": "githubLinker.openFileFromUrl",
+        "title": "GitHub Linker: Open local file from clipboard"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "githubLinker",
+      "properties": {
+        "githubLinker.githubLinker.useFetchUrl": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Whether to use the fetch url (true) or push url (false) of the repository."
+        },
+        "githubLinker.githubLinker.remoteId": {
+          "type": "number",
+          "default": 0,
+          "markdownDescription": "Which remote to use, if there are multiple. Only use in a workspace, if there actually are multiple remotes!"
+        },
+        "githubLinker.templates.oneLineNumber": {
+          "type": "string",
+          "markdownDescription": "The template used to construct the `${lineSpec}` in `#githubLinker.templates.githubLinker#`, if only one line is selected. Can reference `${line0}`.",
+          "default": "#L${line0}"
+        },
+        "githubLinker.templates.twoLineNumbers": {
+          "type": "string",
+          "markdownDescription": "The template used to construct the `${lineSpec}` in `#githubLinker.templates.githubLinker#`, if two or more lines are selected. Can reference `${line0}`, `${line1}`.",
+          "default": "#L${line0}:L${line1}"
+        },
+        "githubLinker.templates.githubUrl": {
+          "type": "string",
+          "markdownDescription": "The template used to construct the GitHub url. See README for details.",
+          "default": "${repoUrl}/blob/${remoteHash}/${relativePath}${lineSpec}",
+          "examples": [
+            "${repoUrl}/blob/${remoteHash}/${relativePath}${lineSpec}",
+            "Available Values:\n${path0}\n${repoUrl}\n${relativePath}\n${lineSpec}\n${localBranch}\n${remoteBranch}\n${localHash}\n${remoteHash}\n${tag}\n${tagOrBranch}\n${tagOrLocalHash}\n${tagOrRemoteHash}\n${remoteName}\n${line0}\n${line1}\n"
+          ]
+        },
+        "githubLinker.patterns.githubUrl": {
+          "type": "array",
+          "markdownDescription": "Search-Replace patterns that are applied to the remote URL, when making a GitHub URL. Search patterns are passed to `Regexp()` first!",
+          "items": {
+            "type": "object",
+            "title": "URL pattern",
+            "properties": {
+              "search": {
+                "type": "string",
+                "description": "The search pattern."
+              },
+              "replace": {
+                "type": "string",
+                "description": "The replacement string."
+              }
+            },
+            "examples": [
+              {
+                "search": "\\.git$",
+                "replace": ""
+              },
+              {
+                "search": "^git@(.+):(.+)$",
+                "replace": "https://$1/$2"
+              }
+            ]
+          },
+          "default": [
+            {
+              "search": "\\.git",
+              "replace": ""
+            },
+            {
+              "search": "^git@(.+):(.+)$",
+              "replace": "https://$1/$2"
+            }
+          ]
+        },
+        "githubLinker.patterns.openFiles": {
+          "type": "array",
+          "markdownDescription": "Search-Replace patterns that are applied to the URL/path, when opening a file from the clipboard. Search patterns are passed to `Regexp()` first!",
+          "items": {
+            "type": "object",
+            "title": "URL pattern",
+            "properties": {
+              "search": {
+                "type": "string",
+                "description": "The search pattern."
+              },
+              "replace": {
+                "type": "string",
+                "description": "The replacement string."
+              }
+            },
+            "examples": [
+              {
+                "search": "^http.*/blob/[^/]*/",
+                "replace": ""
+              },
+              {
+                "search": "^\"(.*)\"",
+                "replace": "$1"
+              }
+            ]
+          },
+          "default": [
+            {
+              "search": "^http.*/blob/[^/]*/",
+              "replace": ""
+            },
+            {
+              "search": "^\"(.*)\"",
+              "replace": "$1"
+            }
+          ]
+        },
+        "githubLinker.patterns.lineNumbers": {
+          "type": "array",
+          "markdownDescription": "The regex pattern used to identify line numbers. Should contain one or two capture groups.",
+          "items": {
+            "type": "string",
+            "title": "Line Pattern",
+            "examples": [
+              "#L(\\d+)[-:]L(\\d+)$",
+              "#L(\\d+)$",
+              "#(\\d+)[-:](\\d+)$",
+              "#(\\d+)$"
+            ]
+          },
+          "default": [
+            "#L(\\d+)[-:]L?(\\d+)$",
+            "#L(\\d+)$",
+            "#(\\d+)[-:](\\d+)$",
+            "#(\\d+)$"
+          ]
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "lint": "eslint src --ext ts",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/node": "^13.13.27",
+    "@types/vscode": "^1.50.0",
+    "@typescript-eslint/parser": "^4.6.1",
+    "@typescript-eslint/eslint-plugin": "^4.6.1",
+    "eslint": "^7.12.1",
+    "glob": "^7.1.6",
+    "mocha": "^7.2.0",
+    "typescript": "^3.9.7"
+  }
+}
