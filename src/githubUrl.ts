@@ -282,6 +282,8 @@ async function getRemoteCommit(doc: vscode.TextDocument, repo: git.Repository): 
 			if (containsUri(headVsRemote) || containsUri(remoteVsHead)) {
 				msg += '\nThe file is ahead/behind the remote.';
 			}
+		} else{
+			msg += 'The current HEAD does not have an upstream reference.';
 		}
 	} else{
 		msg += '\nCould not identify a HEAD reference.';

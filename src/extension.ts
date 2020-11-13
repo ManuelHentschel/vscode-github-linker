@@ -5,6 +5,8 @@ import { copyGithubUrlFromSelection, openGithubUrlFromSelection } from './github
 
 import { openFileFromClipboardUrl } from './openFile';
 
+import { config } from './utils';
+
 
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -22,6 +24,9 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('githubLinker.openFileFromUrl', () => {
 		openFileFromClipboardUrl();
 	}));
+
+	const showInContextMenu = config().get<boolean>('showInContextMenu', true);
+	vscode.commands.executeCommand('setContext', 'githubLinker.showInContextMenu', showInContextMenu);
 
 	console.log('[github-linker-2]: done.');
 }

@@ -39,16 +39,33 @@
         "title": "GitHub Linker: Open local file from clipboard"
       }
     ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "githubLinker.copyUrl",
+          "when": "githubLinker.showInContextMenu"
+        },
+        {
+          "command": "githubLinker.openFileFromUrl",
+          "when": "githubLinker.showInContextMenu"
+        }
+      ]
+    },
     "configuration": {
       "type": "object",
       "title": "githubLinker",
       "properties": {
-        "githubLinker.githubLinker.useFetchUrl": {
+        "githubLinker.showInContextMenu": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Whether to add githubLinker commands to the editor context menu."
+        },
+        "githubLinker.remoteUrl.useFetchUrl": {
           "type": "boolean",
           "default": true,
           "markdownDescription": "Whether to use the fetch url (true) or push url (false) of the repository."
         },
-        "githubLinker.githubLinker.remoteId": {
+        "githubLinker.remoteUrl.remoteId": {
           "type": "number",
           "default": 0,
           "markdownDescription": "Which remote to use, if there are multiple. Only use in a workspace, if there actually are multiple remotes!"
