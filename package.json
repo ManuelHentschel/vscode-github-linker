@@ -2,7 +2,7 @@
   "name": "github-linker",
   "displayName": "GitHub Linker",
   "description": "Make and open Links to GitHub repositories",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "publisher": "manhen",
   "license": "MIT",
   "icon": "img/icon.png",
