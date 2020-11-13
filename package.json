@@ -71,12 +71,12 @@
         },
         "githubLinker.templates.oneLineNumber": {
           "type": "string",
-          "markdownDescription": "The template used to construct the `${lineSpec}` in `#githubLinker.templates.githubLinker#`, if only one line is selected. Can reference `${line0}`.",
+          "markdownDescription": "The template used to construct the `${lineSpec}` in `#githubLinker.templates.githubUrl#`, if only one line is selected. Can reference `${line0}`.",
           "default": "#L${line0}"
         },
         "githubLinker.templates.twoLineNumbers": {
           "type": "string",
-          "markdownDescription": "The template used to construct the `${lineSpec}` in `#githubLinker.templates.githubLinker#`, if two or more lines are selected. Can reference `${line0}`, `${line1}`.",
+          "markdownDescription": "The template used to construct the `${lineSpec}` in `#githubLinker.templates.githubUrl#`, if two or more lines are selected. Can reference `${line0}`, `${line1}`.",
           "default": "#L${line0}:L${line1}"
         },
         "githubLinker.templates.githubUrl": {
