@@ -11,8 +11,6 @@ import { config } from './utils';
 
 export async function activate(context: vscode.ExtensionContext) {
 
-	console.log('[github-linker-2]: activating...');
-
 	context.subscriptions.push(vscode.commands.registerCommand('githubLinker.copyUrl', () => {
 		copyGithubUrlFromSelection();
 	}));
@@ -27,8 +25,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	const showInContextMenu = config().get<boolean>('showInContextMenu', true);
 	vscode.commands.executeCommand('setContext', 'githubLinker.showInContextMenu', showInContextMenu);
-
-	console.log('[github-linker-2]: done.');
 }
 
 

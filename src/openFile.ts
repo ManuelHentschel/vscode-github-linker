@@ -21,7 +21,6 @@ interface ParsedUrl {
 // main function
 export async function openFileFromClipboardUrl(){
     const url = await vscode.env.clipboard.readText();
-    console.log('url: ' + url);
     let parsedUrl = parseUrl(url);
     parsedUrl = checkPath(parsedUrl);
     openFileFromUrl(parsedUrl);
@@ -103,7 +102,6 @@ function checkPath(ret: ParsedUrl): ParsedUrl {
 
 // actually open an editor with the file from the clipboard
 async function openFileFromUrl(parsedUrl: ParsedUrl): Promise<vscode.TextEditor> | null{
-    console.log('localPath: ' + parsedUrl.path);
     // errorCode>0 -> could not find a matching file
     if(parsedUrl.errorCode){
         const msg = parsedUrl.msg || 'File not found: ' + parsedUrl.originalUrl;
