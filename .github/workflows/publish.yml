@@ -9,6 +9,7 @@ on:
     tags: ["v*"]
 
 
+jobs:
   publish:
     name: Publish
     timeout-minutes: 30
