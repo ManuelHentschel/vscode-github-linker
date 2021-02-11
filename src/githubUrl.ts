@@ -172,13 +172,23 @@ function getRepo(uri: vscode.Uri): git.Repository | null {
 function makeRepoBaseUrl(repo: git.Repository): string {
 	// read relevant config
 	const patterns = config().get<SearchReplacePattern[]>('patterns.githubUrl', []);
-	const useFetchUrl = config().get<boolean>('githubUrl.useFetchUrl', true);
-	const remoteId = config().get<number>('githubUrl.remoteId', 0);
-
-	// read url from repo
+	const useFetchUrl = config().get<boolean>('remoteUrl.useFetchUrl', true);
+	let remoteId = config().get<number|string>('remoteUrl.remoteId', 0);
+	
+	// choose correct remote
+	if(typeof remoteId === 'string'){
+		remoteId = repo.state.remotes.findIndex(r => r.name === remoteId);
+	}
 	const nRemotes = repo.state.remotes.length;
 	assert(nRemotes, 'The Git repository does not have any remotes!');
-	const remote = repo.state.remotes[Math.min(remoteId, nRemotes-1)];
+	if(remoteId < 0){
+		remoteId = 0;
+	} else if(remoteId >= nRemotes){
+		remoteId = nRemotes - 1;
+	}
+
+	// read url from repo
+	const remote = repo.state.remotes[remoteId];
 	let url: string = (useFetchUrl ? remote.fetchUrl : remote.pushUrl) || '';
 
 	// apply search replace patterns

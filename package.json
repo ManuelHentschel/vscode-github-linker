@@ -68,9 +68,9 @@
           "markdownDescription": "Whether to use the fetch url (true) or push url (false) of the repository."
         },
         "githubLinker.remoteUrl.remoteId": {
-          "type": "number",
+          "type": ["number", "string"],
           "default": 0,
-          "markdownDescription": "Which remote to use, if there are multiple. Only use in a workspace, if there actually are multiple remotes!"
+          "markdownDescription": "Name or number of remote to use, if there are multiple."
         },
         "githubLinker.templates.oneLineNumber": {
           "type": "string",
