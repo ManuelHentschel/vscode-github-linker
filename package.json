@@ -80,7 +80,7 @@
         "githubLinker.templates.twoLineNumbers": {
           "type": "string",
           "markdownDescription": "The template used to construct the `${lineSpec}` in `#githubLinker.templates.githubUrl#`, if two or more lines are selected. Can reference `${line0}`, `${line1}`.",
-          "default": "#L${line0}:L${line1}"
+          "default": "#L${line0}-L${line1}"
         },
         "githubLinker.templates.githubUrl": {
           "type": "string",
