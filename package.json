@@ -6,6 +6,10 @@
   "publisher": "manhen",
   "license": "MIT",
   "icon": "img/icon.png",
+  "extensionKind": [
+    "ui",
+    "workspace"
+  ],
   "author": {
     "name": "Manuel Hentschel"
   },
@@ -45,10 +49,6 @@
       "editor/context": [
         {
           "command": "githubLinker.copyUrl",
-          "when": "githubLinker.showInContextMenu"
-        },
-        {
-          "command": "githubLinker.openFileFromUrl",
           "when": "githubLinker.showInContextMenu"
         }
       ]
@@ -204,8 +204,6 @@
     "@typescript-eslint/parser": "^4.6.1",
     "@typescript-eslint/eslint-plugin": "^4.6.1",
     "eslint": "^7.12.1",
-    "glob": "^7.1.6",
-    "mocha": "^7.2.0",
     "typescript": "^3.9.7"
   }
 }
