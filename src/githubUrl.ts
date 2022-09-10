@@ -4,25 +4,26 @@ import * as path from 'path';
 
 // Import the declaration of the git API:
 import * as git from './git';
-import { fillTemplate, config, SearchReplacePattern } from './utils';
-import { S_IFDIR } from 'constants';
+import { assert, fillTemplate, config, SearchReplacePattern } from './utils';
 
-
-//// Helpers:
 
 // used to return the url together with info about the success/failure of finding it:
-interface UrlResult {
-	url?: string;
+interface UrlResultOk {
+	url: string;
 	msg?: string;
-	errorCode: 0 | 1 | 2;
+	errorCode: 0;
 }
-
-// helper function, used to abort the url-creation if e.g. no repo is found
-function assert(condition: any, message: string = 'Assertion failed!') {
-	if (!condition) {
-		throw new Error(message);
-	}
+interface UrlResultWarn {
+	url: string;
+	msg: string;
+	errorCode: 1;
 }
+interface UrlResultFail {
+	url?: string;
+	msg: string;
+	errorCode: 2;
+}
+type UrlResult = UrlResultOk | UrlResultWarn | UrlResultFail;
 
 //// Main functions:
 
@@ -33,15 +34,15 @@ export async function copyGithubUrlFromSelection(): Promise<boolean> {
 	const { url, msg, errorCode }: UrlResult = await makeGithubUrlFromSelection();
 
 	// fatal error, show message and abort
-	if (errorCode === 2) {
-		vscode.window.showErrorMessage(msg);
+	if (errorCode === 2 || !url) {
+		vscode.window.showErrorMessage(msg || 'Unknown Error');
 		return false;
 	}
 
 	// write text to clipboard
 	vscode.env.clipboard.writeText(url);
 	const info = `Copied Github URL to clipboard. `;
-	let shouldOpenInBrowser: string = undefined;
+	let shouldOpenInBrowser: string | undefined;
 
 	if (errorCode === 1) {
 		// produced a warning, but still returned an (invalid?) URL
@@ -60,24 +61,24 @@ export async function copyGithubUrlFromSelection(): Promise<boolean> {
 
 // open github url to selection:
 export async function openGithubUrlFromSelection(): Promise<boolean> {
-	const { url: url, msg: msg, errorCode: errorCode }: UrlResult = await makeGithubUrlFromSelection();
+	const ur: UrlResult = await makeGithubUrlFromSelection();
 
-	if (errorCode === 2) {
+	if (ur.errorCode === 2) {
 		// fatal error: show message and abort
-		vscode.window.showErrorMessage(msg);
+		vscode.window.showErrorMessage(ur.msg);
 		return false;
-	} else if (errorCode === 1) {
+	} else if (ur.errorCode === 1) {
 		// warning, try to open (invalid?) url
-		vscode.window.showWarningMessage(msg);
+		vscode.window.showWarningMessage(ur.msg);
 	}
 
-	return openInBrowser(url);
+	return openInBrowser(ur.url);
 }
 
 
 async function openInBrowser(url: string){
 	const uri = vscode.Uri.parse(url);
-	const opened = uri.scheme.match(/https?/) && await vscode.env.openExternal(uri);
+	const opened = !!uri.scheme.match(/https?/) && await vscode.env.openExternal(uri);
 	if(!opened){
 		vscode.window.showErrorMessage(`Failed to open: ${uri.toString()}`);
 	}
@@ -156,7 +157,7 @@ async function makeGithubUrl(doc: vscode.TextDocument, line0: number = 0, line1:
 
 
 // get the repo of the active file form vscode's git extension api
-function getRepo(uri: vscode.Uri): git.Repository | null {
+function getRepo(uri: vscode.Uri): git.Repository {
 	// get git api
 	const gitExtension = vscode.extensions.getExtension<git.GitExtension>('vscode.git');
 	assert(gitExtension, 'Git extension not installed or not activated yet!');
@@ -171,24 +172,29 @@ function getRepo(uri: vscode.Uri): git.Repository | null {
 // read remote url from repo, then apply regexes to convert e.g. ssh-urls to http-urls
 function makeRepoBaseUrl(repo: git.Repository): string {
 	// read relevant config
+	assert(repo.state.remotes.length, 'The Git repository does not have any remotes!');
 	const patterns = config().get<SearchReplacePattern[]>('patterns.githubUrl', []);
 	const useFetchUrl = config().get<boolean>('remoteUrl.useFetchUrl', true);
-	let remoteId = config().get<number|string>('remoteUrl.remoteId', 0);
+	let remoteIds = config().get<(number|string)[]>('remoteUrl.remoteIds', [0]);
 	
 	// choose correct remote
-	if(typeof remoteId === 'string'){
-		remoteId = repo.state.remotes.findIndex(r => r.name === remoteId);
-	}
-	const nRemotes = repo.state.remotes.length;
-	assert(nRemotes, 'The Git repository does not have any remotes!');
-	if(remoteId < 0){
-		remoteId = 0;
-	} else if(remoteId >= nRemotes){
-		remoteId = nRemotes - 1;
+	const remotes = repo.state.remotes;
+	let remote = remotes[0];
+	for (const id of remoteIds) {
+		if(typeof id === 'number' && id < remotes.length){
+			remote = remotes[id];
+			break;
+		}
+		if(typeof id === 'string'){
+			const foundRemote = remotes.find(r => r.name === id);
+			if(foundRemote){
+				remote = foundRemote;
+				break;
+			}
+		}
 	}
 
 	// read url from repo
-	const remote = repo.state.remotes[remoteId];
 	let url: string = (useFetchUrl ? remote.fetchUrl : remote.pushUrl) || '';
 
 	// apply search replace patterns
@@ -304,7 +310,7 @@ async function getRemoteCommit(doc: vscode.TextDocument, repo: git.Repository): 
 	assert(headRef.commit, 'No refs found. Make sure to have at least one branch/commit.');
 
 	ids.localHash = headRef.commit;
-	ids.localBranch = headRef.name;
+	ids.localBranch = headRef.name || '';
 
 	// fill fallbacks:
 	ids.remoteHash = ids.remoteHash || ids.localHash;
@@ -331,7 +337,7 @@ async function getRemoteCommit(doc: vscode.TextDocument, repo: git.Repository): 
 
 function getTagForCommit(commit: string, refs: git.Ref[]): string|null {
 	for(const ref of refs){
-		if(ref.type === git.RefType.Tag && ref.commit === commit){
+		if(ref.type === git.RefType.Tag && ref.commit === commit && ref.name){
 			return ref.name;
 		}
 	}

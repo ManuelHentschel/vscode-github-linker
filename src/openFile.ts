@@ -9,36 +9,41 @@ import * as fs from 'fs';
 import { config, SearchReplacePattern } from './utils';
 
 // contains info about the content of a url/filepath
-interface ParsedUrl {
-    errorCode: number; // return code of parsing the url
+interface IParsedUrl {
+    errorCode: 0 | 1; // return code of parsing the url
     path?: string; // only missing if errorCode != 0
     line0?: number; // sometimes missing -> 0
     line1?: number; // sometimes missing -> 0
     msg?: string; // only relevant if errorCode != 0
-    originalUrl?: string; // only used in error reporting
+    originalUrl: string;
 }
+interface ParsedUrlOk extends IParsedUrl {
+    errorCode: 0;
+    path: string;
+    line0: number;
+    line1: number;
+}
+interface ParsedUrlFail extends IParsedUrl {
+    errorCode: 1;
+    msg: string;
+}
+type ParsedUrl = ParsedUrlOk | ParsedUrlFail;
 
 // main function
 export async function openFileFromClipboardUrl(){
     const url = await vscode.env.clipboard.readText();
-    let parsedUrl = parseUrl(url);
-    parsedUrl = checkPath(parsedUrl);
-    openFileFromUrl(parsedUrl);
+    const parsedUrl = parseUrl(url);
+    const checkedUrl = checkPath(parsedUrl);
+    openFileFromUrl(checkedUrl);
 }
 
 
-function parseUrl(url: string): ParsedUrl {
-    // prep return value
-    let ret: ParsedUrl = {
-        errorCode: 0,
-        originalUrl: url,
-        line0: 0,
-        line1: 0
-    };
+function parseUrl(url: string): ParsedUrlOk {
 
     // read settings
     const patterns = config().get<SearchReplacePattern[]>('patterns.openFiles', []);
     const lineSpecs = config().get<string[]>('patterns.lineNumbers', []);
+    const url0 = url;
 
     // apply search-replace patterns to url/path
 	for (const pattern of patterns) {
@@ -47,23 +52,31 @@ function parseUrl(url: string): ParsedUrl {
     }
 
     // parse line numbers, using the first lineSpec that matches
+    let line0: number = 0;
+    let line1: number = 0;
     for(const lineSpec of lineSpecs){
         const re = new RegExp(lineSpec);
         const m = url.match(re);
         if(m){
             url = url.replace(re, '');
             if(m.length === 2){
-                ret.line0 = parseInt(m[1]);
-                ret.line1 = parseInt(m[1]);
+                line0 = parseInt(m[1]);
+                line1 = parseInt(m[1]);
             } else if(m.length>=3){
-                ret.line0 = parseInt(m[1]);
-                ret.line1 = parseInt(m[2]);
+                line0 = parseInt(m[1]);
+                line1 = parseInt(m[2]);
             }
             break;
         }
     }
-
-    ret.path = url;
+    
+    const ret: ParsedUrlOk = {
+        errorCode: 0,
+        path: url,
+        line0: line0,
+        line1: line1,
+        originalUrl: url0
+    };
 
     return ret;
 }
@@ -71,37 +84,42 @@ function parseUrl(url: string): ParsedUrl {
 
 // check if the path points to an existing file (if absolute path)
 // or combine with workspaceFolders and repoRoots to make an existing path
-function checkPath(ret: ParsedUrl): ParsedUrl {
+function checkPath(parsedUrl: ParsedUrlOk): ParsedUrl {
     
-    const possiblePaths = [];
-    if(path.isAbsolute(ret.path)){
-        possiblePaths.push(ret.path);
+    // if(!ret.path){}
+    
+    const possiblePaths: string[] = [];
+    if(path.isAbsolute(parsedUrl.path)){
+        possiblePaths.push(parsedUrl.path);
     }
-    for(const folder of vscode.workspace.workspaceFolders){
-        possiblePaths.push(path.join(folder.uri.fsPath, ret.path));
+    for(const folder of vscode.workspace.workspaceFolders || []){
+        possiblePaths.push(path.join(folder.uri.fsPath, parsedUrl.path));
     }
     const repos = getRepos();
     for(const repo of repos){
-        possiblePaths.push(path.join(repo.rootUri.fsPath, ret.path));
+        possiblePaths.push(path.join(repo.rootUri.fsPath, parsedUrl.path));
     }
 
     for(const filePath of possiblePaths){
         if(fs.existsSync(filePath) && fs.statSync(filePath).isFile()){
-            ret.path = filePath;
-            ret.errorCode = 0;
-            return ret;
+            parsedUrl.path = filePath;
+            parsedUrl.errorCode = 0;
+            return parsedUrl;
         }
     }
+    
+    const checkedUrl: ParsedUrlFail = {
+        ...parsedUrl,
+        errorCode: 1,
+        msg: `File not found: ${parsedUrl.path}`
+    };
 
-    ret.errorCode = 1;
-    ret.msg = `File not found: ${ret.path}`;
-
-    return ret;
+    return checkedUrl;
 }
 
 
 // actually open an editor with the file from the clipboard
-async function openFileFromUrl(parsedUrl: ParsedUrl): Promise<vscode.TextEditor> | null{
+async function openFileFromUrl(parsedUrl: ParsedUrl): Promise<vscode.TextEditor | null> {
     // errorCode>0 -> could not find a matching file
     if(parsedUrl.errorCode){
         const msg = parsedUrl.msg || 'File not found: ' + parsedUrl.originalUrl;

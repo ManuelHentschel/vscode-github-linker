@@ -67,10 +67,19 @@
           "default": true,
           "markdownDescription": "Whether to use the fetch url (true) or push url (false) of the repository."
         },
-        "githubLinker.remoteUrl.remoteId": {
-          "type": ["number", "string"],
-          "default": 0,
-          "markdownDescription": "Name or number of remote to use, if there are multiple."
+        "githubLinker.remoteUrl.remoteIds": {
+          "type": "array",
+          "items": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "description": "Name of remote or numeric index."
+          },
+          "default": [
+            0
+          ],
+          "markdownDescription": "Preferred names or numeric indices of remote to use, if there are multiple. First to match (either by name or existence of numeric index) is used."
         },
         "githubLinker.templates.oneLineNumber": {
           "type": "string",
@@ -191,19 +200,28 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
+    "vscode:prepublish": "tsc -p .",
+    "compile": "tsc -p .",
     "lint": "eslint src --ext ts",
-    "watch": "tsc -watch -p ./",
+    "watch": "tsc --watch -p .",
     "pretest": "npm run compile && npm run lint",
     "test": "node ./out/test/runTest.js"
   },
-  "devDependencies": {
+  "bla": {
     "@types/node": "^13.13.27",
-    "@types/vscode": "^1.50.0",
-    "@typescript-eslint/parser": "^4.6.1",
+    "@types/vscode": "^1.71.0",
     "@typescript-eslint/eslint-plugin": "^4.6.1",
+    "@typescript-eslint/parser": "^5.36.2",
     "eslint": "^7.12.1",
     "typescript": "^3.9.7"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^18.7.16",
+    "@types/vscode": "^1.50.0",
+    "@typescript-eslint/eslint-plugin": "^5.36.2",
+    "@typescript-eslint/parser": "^5.36.2",
+    "eslint": "^8.23.0",
+    "typescript": "^4.8.3"
   }
 }

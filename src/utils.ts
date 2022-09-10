@@ -21,3 +21,9 @@ export interface SearchReplacePattern {
     replace: string;
 }
 
+// helper function, used to abort the url-creation if e.g. no repo is found
+export function assert(condition: any, message: string = 'Assertion failed!'): asserts condition {
+	if (!condition) {
+		throw new Error(message);
+	}
+}
