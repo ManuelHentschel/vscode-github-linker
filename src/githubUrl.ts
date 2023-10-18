@@ -278,10 +278,7 @@ async function getRemoteCommit(doc: vscode.TextDocument, repo: git.Repository): 
 	}
 
 	const head = repo.state.HEAD;
-	const remoteId = config().get<number>('githubUrl.remoteId', 0);
-	const nRemotes = repo.state.remotes.length;
-	const remote = repo.state.remotes[Math.min(remoteId, nRemotes)];
-	const refs = repo.state.refs;
+	const refs = await repo.getRefs({});
 	let headRef: git.Ref;
 
 	if(head){
