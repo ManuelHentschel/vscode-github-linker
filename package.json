@@ -2,14 +2,10 @@
   "name": "github-linker",
   "displayName": "GitHub Linker",
   "description": "Make and Open Links to GitHub repositories",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "publisher": "manhen",
   "license": "MIT",
   "icon": "img/icon.png",
-  "extensionKind": [
-    "ui",
-    "workspace"
-  ],
   "extensionDependencies": [
     "vscode.git"
   ],
