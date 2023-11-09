@@ -2,7 +2,7 @@
   "name": "github-linker",
   "displayName": "GitHub Linker",
   "description": "Make and Open Links to GitHub repositories",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "publisher": "manhen",
   "license": "MIT",
   "icon": "img/icon.png",
@@ -20,14 +20,9 @@
     "url": "https://github.com/ManuelHentschel/vscode-github-linker/issues"
   },
   "engines": {
-    "vscode": "^1.50.0"
+    "vscode": "^1.75.0"
   },
-  "activationEvents": [
-    "onStartupFinished",
-    "onCommand:githubLinker.copyUrl",
-    "onCommand:githubLinker.openUrlInBrowser",
-    "onCommand:githubLinker.openFileFromUrl"
-  ],
+  "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
@@ -48,7 +43,7 @@
       "editor/context": [
         {
           "command": "githubLinker.copyUrl",
-          "when": "githubLinker.showInContextMenu"
+          "when": "config.githubLinker.showInContextMenu"
         }
       ]
     },
