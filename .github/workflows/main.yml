@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: npm install
+      - run: npm ci
       - uses: lannonbr/vsce-action@master
         with:
           args: "package"
@@ -27,5 +27,5 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: "13.x"
-      - run: npm install
+      - run: npm ci
       - run: npm run lint
