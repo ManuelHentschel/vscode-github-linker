@@ -14,7 +14,7 @@ jobs:
           args: "package"
       - name: Identify output file # can be retrieved as steps.filenames.outputs.file_out
         id: filenames
-        run: echo "::set-output name=file_out::$(ls | grep "\.vsix$" | head -1)"
+        run: echo "file_out=$(ls | grep "\.vsix$" | head -1)" >> $GITHUB_OUTPUT
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.filenames.outputs.file_out }}
