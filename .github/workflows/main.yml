@@ -1,7 +1,6 @@
 name: main
 
 # builds the .vsix file on each push, PR
-# runs a linter on each push, PR
 
 on: [push, pull_request]
 jobs:
