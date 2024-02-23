@@ -199,14 +199,6 @@
     "lint": "eslint src --ext ts",
     "watch": "tsc --watch -p ."
   },
-  "bla": {
-    "@types/node": "^13.13.27",
-    "@types/vscode": "^1.71.0",
-    "@typescript-eslint/eslint-plugin": "^4.6.1",
-    "@typescript-eslint/parser": "^5.36.2",
-    "eslint": "^7.12.1",
-    "typescript": "^3.9.7"
-  },
   "dependencies": {},
   "devDependencies": {
     "@types/node": "^18.7.16",
