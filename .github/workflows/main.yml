@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: npm ci
+      - run: yarn install --frozen-lockfile
       - uses: lannonbr/vsce-action@master
         with:
           args: "package"
@@ -20,12 +20,3 @@ jobs:
         with:
           name: ${{ steps.filenames.outputs.file_out }}
           path: ${{ steps.filenames.outputs.file_out }}
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-        with:
-          node-version: "13.x"
-      - run: npm ci
-      - run: npm run lint
